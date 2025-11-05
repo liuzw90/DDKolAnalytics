@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}达人列表 - 抖店达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>达人列表</h2>
+    <hr>
+    
+    {% if user.is_business %}
+    <div class="mb-3">
+        <a href="{% url 'influencers:influencer_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 添加达人
+        </a>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>达人名称</th>
+                            <th>抖音号</th>
+                            <th>UID</th>
+                            <th>达人等级</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for influencer in influencers %}
+                        <tr>
+                            <td>{{ influencer.name }}</td>
+                            <td>{{ influencer.douyin_id }}</td>
+                            <td>{{ influencer.uid }}</td>
+                            <td>{{ influencer.influencer_level|default:'未设置' }}</td>
+                            <td>{{ influencer.create_time|date:'Y-m-d H:i' }}</td>
+                            <td>
+                                <a href="{% url 'influencers:influencer_detail' influencer.pk %}" class="btn btn-sm btn-info">详情</a>
+                                {% if user.is_business and user == influencer.created_by %}
+                                <a href="{% url 'influencers:influencer_edit' influencer.pk %}" class="btn btn-sm btn-warning">编辑</a>
+                                <a href="{% url 'influencers:influencer_delete' influencer.pk %}" class="btn btn-sm btn-danger">删除</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">暂无达人数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分页 -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if influencers.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ influencers.previous_page_number }}">上一页</a>
+            </li>
+            {% endif %}
+            
+            {% for num in influencers.paginator.page_range %}
+            {% if influencers.number == num %}
+            <li class="page-item active">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if influencers.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ influencers.next_page_number }}">下一页</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

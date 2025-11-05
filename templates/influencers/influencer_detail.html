@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ influencer.name }} - 达人详情{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>达人详情</h2>
+    <hr>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ influencer.name }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>抖音号：</strong>{{ influencer.douyin_id }}</p>
+                    <p><strong>UID：</strong>{{ influencer.uid }}</p>
+                    <p><strong>达人等级：</strong>{{ influencer.influencer_level|default:'未设置' }}</p>
+                    <p><strong>挂车商品链接：</strong>
+                        {% if influencer.product_link %}
+                        <a href="{{ influencer.product_link }}" target="_blank">点击查看</a>
+                        {% else %}
+                        未设置
+                        {% endif %}
+                    </p>
+                    <p><strong>创建者：</strong>{{ influencer.created_by.username }}</p>
+                    <p><strong>创建时间：</strong>{{ influencer.create_time|date:'Y-m-d H:i' }}</p>
+                    <p><strong>更新时间：</strong>{{ influencer.update_time|date:'Y-m-d H:i' }}</p>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                {% if user.is_business and user == influencer.created_by %}
+                <a href="{% url 'influencers:influencer_edit' influencer.pk %}" class="btn btn-warning">编辑</a>
+                <a href="{% url 'influencers:influencer_delete' influencer.pk %}" class="btn btn-danger">删除</a>
+                {% endif %}
+                <a href="{% url 'influencers:influencer_list' %}" class="btn btn-secondary">返回列表</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 关联素材 -->
+    <div class="mt-4">
+        <h3>关联素材</h3>
+        <hr>
+        
+        {% if user.is_business and user == influencer.created_by %}
+        <div class="mb-3">
+            <a href="{% url 'influencers:material_create' %}?influencer={{ influencer.pk }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 添加素材
+            </a>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>素材ID</th>
+                                <th>视频链接</th>
+                                <th>标签</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in materials %}
+                            <tr>
+                                <td>{{ material.material_id }}</td>
+                                <td><a href="{{ material.video_url }}" target="_blank">查看视频</a></td>
+                                <td>
+                                    {% for tag in material.tags.all %}
+                                    <span class="badge badge-secondary">{{ tag.name }}</span>
+                                    {% empty %}
+                                    无标签
+                                    {% endfor %}
+                                </td>
+                                <td>{{ material.create_time|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <a href="{% url 'influencers:material_detail' material.pk %}" class="btn btn-sm btn-info">详情</a>
+                                    {% if user.is_business and user == material.created_by %}
+                                    <a href="{% url 'influencers:material_edit' material.pk %}" class="btn btn-sm btn-warning">编辑</a>
+                                    <a href="{% url 'influencers:material_delete' material.pk %}" class="btn btn-sm btn-danger">删除</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">暂无素材</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

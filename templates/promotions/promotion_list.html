@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}推广数据列表 - 抖店达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>推广数据列表</h2>
+    <hr>
+    
+    {% if user.is_pitcher %}
+    <div class="mb-3">
+        <a href="{% url 'promotions:promotion_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 添加推广数据
+        </a>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>达人名称</th>
+                            <th>素材ID</th>
+                            <th>推广日期</th>
+                            <th>推广消耗</th>
+                            <th>销售额</th>
+                            <th>ROI</th>
+                            <th>录入者</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for promotion in promotions %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'influencers:influencer_detail' promotion.material.influencer.pk %}">
+                                    {{ promotion.material.influencer.name }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'influencers:material_detail' promotion.material.pk %}">
+                                    {{ promotion.material.material_id }}
+                                </a>
+                            </td>
+                            <td>{{ promotion.date|date:'Y-m-d' }}</td>
+                            <td>¥{{ promotion.spend|floatformat:2 }}</td>
+                            <td>¥{{ promotion.sales_amount|floatformat:2 }}</td>
+                            <td>{{ promotion.roi|floatformat:2 }}</td>
+                            <td>{{ promotion.created_by.username }}</td>
+                            <td>
+                                <a href="{% url 'promotions:promotion_detail' promotion.pk %}" class="btn btn-sm btn-info">详情</a>
+                                {% if user.is_pitcher and user == promotion.created_by %}
+                                <a href="{% url 'promotions:promotion_edit' promotion.pk %}" class="btn btn-sm btn-warning">编辑</a>
+                                <a href="{% url 'promotions:promotion_delete' promotion.pk %}" class="btn btn-sm btn-danger">删除</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">暂无推广数据</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分页 -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if promotions.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ promotions.previous_page_number }}">上一页</a>
+            </li>
+            {% endif %}
+            
+            {% for num in promotions.paginator.page_range %}
+            {% if promotions.number == num %}
+            <li class="page-item active">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if promotions.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ promotions.next_page_number }}">下一页</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

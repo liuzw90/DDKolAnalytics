@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - 抖店达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ title }}</h2>
+    <hr>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                
+                <div class="form-group">
+                    <label for="id_tags">素材标签</label>
+                    <select name="tags" id="id_tags" class="form-control select2" multiple>
+                        {% for tag in form.tags.field.queryset %}
+                        <option value="{{ tag.id }}" {% if tag.id in selected_tags %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">可选择多个标签</small>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <a href="{% url 'influencers:material_list' %}" class="btn btn-secondary">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: '选择素材标签',
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

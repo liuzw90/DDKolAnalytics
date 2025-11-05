@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}素材详情 - {{ material.material_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>素材详情</h2>
+    <hr>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>素材ID：{{ material.material_id }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>关联达人：</strong>
+                        <a href="{% url 'influencers:influencer_detail' material.influencer.pk %}">
+                            {{ material.influencer.name }}
+                        </a>
+                    </p>
+                    <p><strong>视频素材链接：</strong>
+                        <a href="{{ material.video_url }}" target="_blank">点击查看</a>
+                    </p>
+                    <p><strong>创建者：</strong>{{ material.created_by.username }}</p>
+                    <p><strong>创建时间：</strong>{{ material.create_time|date:'Y-m-d H:i' }}</p>
+                    <p><strong>更新时间：</strong>{{ material.update_time|date:'Y-m-d H:i' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>素材标签：</strong></p>
+                    <div>
+                        {% for tag in material.tags.all %}
+                        <span class="badge badge-secondary mr-2">{{ tag.name }}</span>
+                        {% empty %}
+                        <span class="text-muted">无标签</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                {% if user.is_business and user == material.created_by %}
+                <a href="{% url 'influencers:material_edit' material.pk %}" class="btn btn-warning">编辑</a>
+                <a href="{% url 'influencers:material_delete' material.pk %}" class="btn btn-danger">删除</a>
+                {% endif %}
+                <a href="{% url 'influencers:material_list' %}" class="btn btn-secondary">返回列表</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 推广数据 -->
+    <div class="mt-4">
+        <h3>推广数据</h3>
+        <hr>
+        
+        {% if user.is_pitcher %}
+        <div class="mb-3">
+            <a href="{% url 'promotions:promotion_create' %}?material={{ material.pk }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 添加推广数据
+            </a>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>日期</th>
+                                <th>推广消耗</th>
+                                <th>销售额</th>
+                                <th>ROI</th>
+                                <th>录入者</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for promotion in promotions %}
+                            <tr>
+                                <td>{{ promotion.date|date:'Y-m-d' }}</td>
+                                <td>¥{{ promotion.spend|floatformat:2 }}</td>
+                                <td>¥{{ promotion.sales_amount|floatformat:2 }}</td>
+                                <td>{{ promotion.roi|floatformat:2 }}</td>
+                                <td>{{ promotion.created_by.username }}</td>
+                                <td>
+                                    <a href="{% url 'promotions:promotion_detail' promotion.pk %}" class="btn btn-sm btn-info">详情</a>
+                                    {% if user.is_pitcher and user == promotion.created_by %}
+                                    <a href="{% url 'promotions:promotion_edit' promotion.pk %}" class="btn btn-sm btn-warning">编辑</a>
+                                    <a href="{% url 'promotions:promotion_delete' promotion.pk %}" class="btn btn-sm btn-danger">删除</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">暂无推广数据</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
