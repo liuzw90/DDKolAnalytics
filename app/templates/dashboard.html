@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">仪表盘</h1>
+    
+    <!-- 数据概览卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">达人总数</h5>
+                    <p class="card-text fs-3">{{ influencers_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">素材总数</h5>
+                    <p class="card-text fs-3">{{ materials_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">推广数据总数</h5>
+                    <p class="card-text fs-3">{{ promotions_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近推广数据 -->
+    <div class="card">
+        <div class="card-header">
+            最近推广数据
+        </div>
+        <div class="card-body">
+            {% if recent_promotions %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>推广名称</th>
+                            <th>达人</th>
+                            <th>日期</th>
+                            <th>曝光量</th>
+                            <th>点击量</th>
+                            <th>转化量</th>
+                            <th>ROI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for promotion in recent_promotions %}
+                        <tr>
+                            <td><a href="{{ url_for('promotion_detail', id=promotion.id) }}">{{ promotion.name }}</a></td>
+                            <td>{{ promotion.material.influencer.name }}</td>
+                            <td>{{ promotion.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ promotion.impressions }}</td>
+                            <td>{{ promotion.clicks }}</td>
+                            <td>{{ promotion.conversions }}</td>
+                            <td>
+                                {% if promotion.cost > 0 %}
+                                    {{ "%.2f"|format((promotion.revenue - promotion.cost) / promotion.cost * 100) }}%
+                                {% else %}
+                                    - - -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">暂无推广数据</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

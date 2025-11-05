@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}推广详情 - 抖音达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">推广详情：{{ promotion.name }}</h5>
+                    <div class="card-tools">
+                        {% if (current_user.role == 'business' and promotion.created_by == current_user.id) or current_user.role == 'pitcher' %}
+                        <a href="{{ url_for('promotions.edit_promotion', promotion_id=promotion.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> 编辑
+                        </a>
+                        <a href="{{ url_for('promotions.delete_promotion', promotion_id=promotion.id) }}" class="btn btn-sm btn-danger ml-2">
+                            <i class="fas fa-trash"></i> 删除
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('promotions.promotion_list') }}" class="btn btn-sm btn-secondary ml-2">
+                            <i class="fas fa-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted">基本信息</h6>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>推广ID</th>
+                                            <td>{{ promotion.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>推广名称</th>
+                                            <td>{{ promotion.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>达人</th>
+                                            <td>
+                                                {% if promotion.influencer %}
+                                                <a href="{{ url_for('influencers.influencer_detail', influencer_id=promotion.influencer.id) }}">
+                                                    {{ promotion.influencer.name }} ({{ promotion.influencer.douyin_id }})
+                                                </a>
+                                                {% else %}
+                                                未关联
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>素材</th>
+                                            <td>
+                                                {% if promotion.material %}
+                                                <a href="{{ url_for('influencers.material_detail', material_id=promotion.material.id) }}">
+                                                    {{ promotion.material.material_id }}
+                                                </a>
+                                                {% else %}
+                                                未关联
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>投放时间</th>
+                                            <td>{{ promotion.promotion_date.strftime('%Y-%m-%d') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>创建人</th>
+                                            <td>{{ promotion.created_by_user.username if promotion.created_by_user else '系统' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>创建时间</th>
+                                            <td>{{ promotion.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted">效果数据</h6>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>曝光量</th>
+                                            <td>{{ promotion.exposure_count }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>点击量</th>
+                                            <td>{{ promotion.click_count }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>点击率 (CTR)</th>
+                                            <td>{{ "%.2f%%"|format((promotion.click_count / promotion.exposure_count * 100) if promotion.exposure_count > 0 else 0) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>转化量</th>
+                                            <td>{{ promotion.conversion_count }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>转化率</th>
+                                            <td>{{ "%.2f%%"|format(promotion.conversion_rate * 100) if promotion.conversion_rate else '0.00%' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>投放成本</th>
+                                            <td>¥{{ "%.2f"|format(promotion.cost) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>收入</th>
+                                            <td>¥{{ "%.2f"|format(promotion.revenue) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>ROI</th>
+                                            <td>{{ "%.2f"|format(promotion.roi) if promotion.roi else '0.00' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>ROAS</th>
+                                            <td>{{ "%.2f"|format((promotion.revenue / promotion.cost) if promotion.cost > 0 else 0) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h6 class="text-muted">备注信息</h6>
+                        <div class="card">
+                            <div class="card-body">
+                                {{ promotion.notes or '暂无备注信息' }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h6 class="text-muted">数据分析图表</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h7 class="card-title">转化漏斗</h7>
+                                        <div id="funnel-chart" style="height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h7 class="card-title">投资回报分析</h7>
+                                        <div id="roi-chart" style="height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 转化漏斗图
+        const funnelChart = echarts.init(document.getElementById('funnel-chart'));
+        const funnelOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            series: [{
+                name: '转化漏斗',
+                type: 'funnel',
+                left: '10%',
+                top: 60,
+                bottom: 60,
+                width: '80%',
+                min: 0,
+                max: 100,
+                minSize: '0%',
+                maxSize: '100%',
+                sort: 'descending',
+                gap: 2,
+                label: {
+                    show: true,
+                    position: 'inside'
+                },
+                labelLine: {
+                    length: 10,
+                    lineStyle: {
+                        width: 1,
+                        type: 'solid'
+                    }
+                },
+                itemStyle: {
+                    borderColor: '#fff',
+                    borderWidth: 1
+                },
+                emphasis: {
+                    label: {
+                        fontSize: 20
+                    }
+                },
+                data: [
+                    {value: {{ promotion.exposure_count }}, name: '曝光'},
+                    {value: {{ promotion.click_count }}, name: '点击'},
+                    {value: {{ promotion.conversion_count }}, name: '转化'}
+                ]
+            }]
+        };
+        funnelChart.setOption(funnelOption);
+        
+        // ROI分析图
+        const roiChart = echarts.init(document.getElementById('roi-chart'));
+        const roiOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['成本', '收入']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['推广活动']
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: {
+                    formatter: '¥{value}'
+                }
+            },
+            series: [
+                {
+                    name: '成本',
+                    type: 'bar',
+                    data: [{{ promotion.cost }}],
+                    itemStyle: {
+                        color: '#ff6b6b'
+                    }
+                },
+                {
+                    name: '收入',
+                    type: 'bar',
+                    data: [{{ promotion.revenue }}],
+                    itemStyle: {
+                        color: '#48dbfb'
+                    }
+                }
+            ]
+        };
+        roiChart.setOption(roiOption);
+        
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            funnelChart.resize();
+            roiChart.resize();
+        });
+    });
+</script>
+{% endblock %}

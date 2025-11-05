@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}素材列表 - DDK分析平台{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1>素材列表</h1>
+    {% if current_user.is_business() %}
+    <a href="{{ url_for('influencers.material_create') }}" class="btn btn-primary">创建素材</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>素材ID</th>
+                        <th>达人名称</th>
+                        <th>视频链接</th>
+                        <th>推广数据</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials.items %}
+                    <tr>
+                        <td>{{ material.material_id }}</td>
+                        <td>{{ material.influencer.name }}</td>
+                        <td><a href="{{ material.video_url }}" target="_blank">{{ material.video_url }}</a></td>
+                        <td>{{ material.promotion_data.count() }} 条</td>
+                        <td>{{ material.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <a href="{{ url_for('influencers.material_detail', material_id=material.id) }}" class="btn btn-sm btn-info">详情</a>
+                            {% if current_user.is_business() and material.created_by_id == current_user.id %}
+                            <a href="{{ url_for('influencers.material_edit', material_id=material.id) }}" class="btn btn-sm btn-primary">编辑</a>
+                            <form action="{{ url_for('influencers.material_delete', material_id=material.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除该素材吗？')">删除</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if materials.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('influencers.material_list', page=materials.prev_num) }}">上一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">上一页</span>
+                </li>
+                {% endif %}
+                
+                {% for page_num in materials.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                {% if page_num == materials.page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('influencers.material_list', page=page_num) }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if materials.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('influencers.material_list', page=materials.next_num) }}">下一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">下一页</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}达人详情 - DDK分析平台{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1>达人详情</h1>
+    <a href="{{ url_for('influencers.influencer_list') }}" class="btn btn-secondary">返回列表</a>
+    {% if current_user.is_business() and influencer.created_by_id == current_user.id %}
+    <a href="{{ url_for('influencers.influencer_edit', influencer_id=influencer.id) }}" class="btn btn-primary">编辑达人</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>达人信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>达人名称:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.name }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <strong>抖音号:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.douyin_id }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <strong>达人UID:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.uid }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <strong>达人等级:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.influencer_level }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <strong>创建时间:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <strong>创建人:</strong>
+                    </div>
+                    <div class="col-md-8">
+                        {{ influencer.created_by.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <h2>关联素材</h2>
+    {% if current_user.is_business() %}
+    <a href="{{ url_for('influencers.material_create') }}" class="btn btn-primary">创建素材</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if materials %}
+        <div class="table-container">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>素材ID</th>
+                        <th>视频链接</th>
+                        <th>推广数据</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>{{ material.material_id }}</td>
+                        <td><a href="{{ material.video_url }}" target="_blank">{{ material.video_url }}</a></td>
+                        <td>{{ material.promotion_data.count() }} 条</td>
+                        <td>{{ material.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <a href="{{ url_for('influencers.material_detail', material_id=material.id) }}" class="btn btn-sm btn-info">详情</a>
+                            {% if current_user.is_business() and material.created_by_id == current_user.id %}
+                            <a href="{{ url_for('influencers.material_edit', material_id=material.id) }}" class="btn btn-sm btn-primary">编辑</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center">暂无关联素材</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

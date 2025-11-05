@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - DDK分析平台{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card stats-card bg-primary text-white">
+            <div class="card-body">
+                <h3>{{ stats.influencers_count or 0 }}</h3>
+                <p class="text-white-75">达人数量</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stats-card bg-success text-white">
+            <div class="card-body">
+                <h3>{{ stats.materials_count or 0 }}</h3>
+                <p class="text-white-75">素材数量</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if stats.promotions_count is defined %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card stats-card bg-info text-white">
+            <div class="card-body">
+                <h3>{{ stats.promotions_count or 0 }}</h3>
+                <p class="text-white-75">推广数据数量</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-6">
+    <h2>快速操作</h2>
+    <div class="row mt-3">
+        {% if current_user.is_business() %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">达人管理</h5>
+                    <p class="card-text">创建和管理达人信息</p>
+                    <a href="{{ url_for('influencers.influencer_list') }}" class="btn btn-primary">查看达人列表</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">素材管理</h5>
+                    <p class="card-text">创建和管理素材信息</p>
+                    <a href="{{ url_for('influencers.material_list') }}" class="btn btn-primary">查看素材列表</a>
+                </div>
+            </div>
+        </div>
+        {% elif current_user.is_pitcher() %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">推广数据管理</h5>
+                    <p class="card-text">创建和管理推广数据</p>
+                    <a href="{{ url_for('promotions.promotion_list') }}" class="btn btn-primary">查看推广数据</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">批量获取数据</h5>
+                    <p class="card-text">通过API批量获取推广数据</p>
+                    <a href="{{ url_for('promotions.batch_fetch_promotions') }}" class="btn btn-primary">批量获取</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

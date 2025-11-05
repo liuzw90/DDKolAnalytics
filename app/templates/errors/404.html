@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}页面未找到 - DDK分析平台{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="text-5xl mb-4">404</h1>
+    <h2 class="text-2xl mb-4">页面未找到</h2>
+    <p class="mb-6">抱歉，您访问的页面不存在或已被移除</p>
+    <a href="{{ url_for('accounts.dashboard') }}" class="btn btn-primary">返回首页</a>
+</div>
+{% endblock %}

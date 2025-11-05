@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}编辑达人{% else %}创建达人{% endif %} - DDK分析平台{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white text-center">
+                <h3>{% if is_edit %}编辑达人{% else %}创建达人{% endif %}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", placeholder="请输入达人名称") }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.name.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.douyin_id.label(class="form-label") }}
+                        {{ form.douyin_id(class="form-control", placeholder="请输入抖音号") }}
+                        {% if form.douyin_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.douyin_id.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.uid.label(class="form-label") }}
+                        {{ form.uid(class="form-control", placeholder="请输入达人UID") }}
+                        {% if form.uid.errors %}
+                            <div class="text-danger">
+                                {% for error in form.uid.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.influencer_level.label(class="form-label") }}
+                        {{ form.influencer_level(class="form-control", placeholder="请输入达人等级") }}
+                        {% if form.influencer_level.errors %}
+                            <div class="text-danger">
+                                {% for error in form.influencer_level.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">{% if is_edit %}更新{% else %}创建{% endif %}</button>
+                        <a href="{{ url_for('influencers.influencer_list') }}" class="btn btn-secondary">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

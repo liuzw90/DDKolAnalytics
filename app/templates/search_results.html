@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">搜索结果</h1>
+    
+    <div class="mb-4">
+        <form method="GET" action="{{ url_for('search') }}">
+            <div class="input-group">
+                <input type="text" class="form-control" name="q" value="{{ keyword }}" placeholder="搜索...">
+                <select class="form-select" name="type">
+                    <option value="all" {% if result_type == 'all' %}selected{% endif %}>全部</option>
+                    <option value="influencers" {% if result_type == 'influencers' %}selected{% endif %}>达人</option>
+                    <option value="materials" {% if result_type == 'materials' %}selected{% endif %}>素材</option>
+                    <option value="promotions" {% if result_type == 'promotions' %}selected{% endif %}>推广</option>
+                </select>
+                <button type="submit" class="btn btn-primary">搜索</button>
+            </div>
+        </form>
+    </div>
+    
+    {% if not keyword %}
+    <div class="alert alert-info" role="alert">
+        请输入关键词进行搜索
+    </div>
+    {% else %}
+        {% if influencers or materials or promotions %}
+            <!-- 达人搜索结果 -->
+            {% if result_type in ['all', 'influencers'] and influencers %}
+            <div class="mb-6">
+                <h2 class="h4 mb-3">达人</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>达人名称</th>
+                                <th>抖音号</th>
+                                <th>UID</th>
+                                <th>等级</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for influencer in influencers %}
+                            <tr>
+                                <td>{{ influencer.name }}</td>
+                                <td>{{ influencer.douyin_id }}</td>
+                                <td>{{ influencer.uid }}</td>
+                                <td>{{ influencer.influencer_level or '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('influencer_detail', id=influencer.id) }}" class="btn btn-sm btn-info">查看</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 素材搜索结果 -->
+            {% if result_type in ['all', 'materials'] and materials %}
+            <div class="mb-6">
+                <h2 class="h4 mb-3">素材</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>素材ID</th>
+                                <th>达人</th>
+                                <th>视频链接</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in materials %}
+                            <tr>
+                                <td>{{ material.material_id }}</td>
+                                <td>{{ material.influencer.name }}</td>
+                                <td><a href="{{ material.video_url }}" target="_blank">查看链接</a></td>
+                                <td>
+                                    <a href="{{ url_for('material_detail', id=material.id) }}" class="btn btn-sm btn-info">查看</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 推广搜索结果 -->
+            {% if result_type in ['all', 'promotions'] and promotions %}
+            <div class="mb-6">
+                <h2 class="h4 mb-3">推广</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>推广名称</th>
+                                <th>达人</th>
+                                <th>日期</th>
+                                <th>曝光量</th>
+                                <th>点击量</th>
+                                <th>转化量</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for promotion in promotions %}
+                            <tr>
+                                <td>{{ promotion.name }}</td>
+                                <td>{{ promotion.material.influencer.name }}</td>
+                                <td>{{ promotion.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ promotion.impressions }}</td>
+                                <td>{{ promotion.clicks }}</td>
+                                <td>{{ promotion.conversions }}</td>
+                                <td>
+                                    <a href="{{ url_for('promotion_detail', id=promotion.id) }}" class="btn btn-sm btn-info">查看</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            未找到相关结果，请尝试其他关键词
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

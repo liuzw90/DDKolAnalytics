@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if promotion %}编辑推广数据{% else %}添加推广数据{% endif %} - 抖音达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% if promotion %}编辑推广数据{% else %}添加推广数据{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (' is-invalid' if form.name.errors else '')) }}
+                            {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                {{ form.influencer_id.label(class="form-label") }}
+                                {{ form.influencer_id(class="form-control" + (' is-invalid' if form.influencer_id.errors else '')) }}
+                                {% for error in form.influencer_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group col-md-6">
+                                {{ form.material_id.label(class="form-label") }}
+                                {{ form.material_id(class="form-control" + (' is-invalid' if form.material_id.errors else '')) }}
+                                {% for error in form.material_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.promotion_date.label(class="form-label") }}
+                            {{ form.promotion_date(class="form-control" + (' is-invalid' if form.promotion_date.errors else '')) }}
+                            {% for error in form.promotion_date.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                {{ form.exposure_count.label(class="form-label") }}
+                                {{ form.exposure_count(class="form-control" + (' is-invalid' if form.exposure_count.errors else '')) }}
+                                {% for error in form.exposure_count.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group col-md-4">
+                                {{ form.click_count.label(class="form-label") }}
+                                {{ form.click_count(class="form-control" + (' is-invalid' if form.click_count.errors else '')) }}
+                                {% for error in form.click_count.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group col-md-4">
+                                {{ form.conversion_count.label(class="form-label") }}
+                                {{ form.conversion_count(class="form-control" + (' is-invalid' if form.conversion_count.errors else '')) }}
+                                {% for error in form.conversion_count.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                {{ form.cost.label(class="form-label") }}
+                                {{ form.cost(class="form-control" + (' is-invalid' if form.cost.errors else '')) }}
+                                {% for error in form.cost.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group col-md-6">
+                                {{ form.revenue.label(class="form-label") }}
+                                {{ form.revenue(class="form-control" + (' is-invalid' if form.revenue.errors else '')) }}
+                                {% for error in form.revenue.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if promotion %}更新{% else %}保存{% endif %}
+                            </button>
+                            <a href="{{ url_for('promotions.promotion_list') }}" class="btn btn-secondary ml-2">
+                                取消
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 当达人选择改变时，更新可选的素材列表
+    document.getElementById('influencer_id').addEventListener('change', function() {
+        const influencerId = this.value;
+        const materialSelect = document.getElementById('material_id');
+        
+        // 清空当前素材选项
+        materialSelect.innerHTML = '<option value="">请选择素材</option>';
+        
+        if (influencerId) {
+            // 模拟根据达人ID获取素材列表的API调用
+            // 实际项目中应该通过AJAX请求后端API获取真实数据
+            fetch('{{ url_for('api.get_influencer_materials') }}?influencer_id=' + influencerId)
+                .then(response => response.json())
+                .then(data => {
+                    data.materials.forEach(material => {
+                        const option = document.createElement('option');
+                        option.value = material.id;
+                        option.textContent = material.material_id;
+                        // 如果是编辑模式且当前素材匹配，选中该选项
+                        {% if promotion and promotion.material_id %}
+                        if (material.id == {{ promotion.material_id }}) {
+                            option.selected = true;
+                        }
+                        {% endif %}
+                        materialSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching materials:', error));
+        }
+    });
+    
+    // 页面加载时，如果已经有达人选择，初始化素材列表
+    document.addEventListener('DOMContentLoaded', function() {
+        const influencerSelect = document.getElementById('influencer_id');
+        if (influencerSelect.value) {
+            influencerSelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}

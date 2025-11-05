@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}素材详情 - 抖音达人数据分析系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">素材详情</h5>
+                    <div class="card-tools">
+                        {% if current_user.role == 'business' and material.created_by == current_user.id %}
+                        <a href="{{ url_for('influencers.edit_material', material_id=material.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> 编辑
+                        </a>
+                        <a href="{{ url_for('influencers.delete_material', material_id=material.id) }}" class="btn btn-sm btn-danger ml-2">
+                            <i class="fas fa-trash"></i> 删除
+                        </a>
+                        {% elif current_user.role == 'pitcher' %}
+                        <a href="{{ url_for('influencers.edit_material', material_id=material.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> 编辑
+                        </a>
+                        <a href="{{ url_for('influencers.delete_material', material_id=material.id) }}" class="btn btn-sm btn-danger ml-2">
+                            <i class="fas fa-trash"></i> 删除
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('influencers.material_list') }}" class="btn btn-sm btn-secondary ml-2">
+                            <i class="fas fa-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted">素材基本信息</h6>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>素材ID</th>
+                                            <td>{{ material.material_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>达人</th>
+                                            <td>
+                                                <a href="{{ url_for('influencers.influencer_detail', influencer_id=material.influencer.id) }}">
+                                                    {{ material.influencer.name }} ({{ material.influencer.douyin_id }})
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>视频链接</th>
+                                            <td>
+                                                {% if material.video_url %}
+                                                <a href="{{ material.video_url }}" target="_blank">{{ material.video_url }}</a>
+                                                {% else %}
+                                                暂无
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>素材类型</th>
+                                            <td>{{ material.material_type or '未设置' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>素材标题</th>
+                                            <td>{{ material.title or '未设置' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted">素材统计信息</h6>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>播放量</th>
+                                            <td>{{ material.play_count or 0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>点赞量</th>
+                                            <td>{{ material.like_count or 0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>评论量</th>
+                                            <td>{{ material.comment_count or 0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>分享量</th>
+                                            <td>{{ material.share_count or 0 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>发布时间</th>
+                                            <td>{{ material.publish_time.strftime('%Y-%m-%d %H:%M:%S') if material.publish_time else '未设置' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h6 class="text-muted">关联推广数据</h6>
+                        {% if promotions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>推广ID</th>
+                                        <th>推广名称</th>
+                                        <th>投放时间</th>
+                                        <th>曝光量</th>
+                                        <th>点击量</th>
+                                        <th>转化率</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for promotion in promotions %}
+                                    <tr>
+                                        <td>{{ promotion.id }}</td>
+                                        <td>{{ promotion.name }}</td>
+                                        <td>{{ promotion.promotion_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ promotion.exposure_count }}</td>
+                                        <td>{{ promotion.click_count }}</td>
+                                        <td>{{ "%.2f%%"|format(promotion.conversion_rate * 100) if promotion.conversion_rate else '0.00%' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('promotions.promotion_detail', promotion_id=promotion.id) }}" class="btn btn-sm btn-info">
+                                                详情
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mt-3">暂无关联推广数据</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}编辑素材{% else %}创建素材{% endif %} - DDK分析平台{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white text-center">
+                <h3>{% if is_edit %}编辑素材{% else %}创建素材{% endif %}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.influencer_id.label(class="form-label") }}
+                        {{ form.influencer_id(class="form-control") }}
+                        {% if form.influencer_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.influencer_id.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.material_id.label(class="form-label") }}
+                        {{ form.material_id(class="form-control", placeholder="请输入素材ID") }}
+                        {% if form.material_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.material_id.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.video_url.label(class="form-label") }}
+                        {{ form.video_url(class="form-control", placeholder="请输入视频链接") }}
+                        {% if form.video_url.errors %}
+                            <div class="text-danger">
+                                {% for error in form.video_url.errors %}
+                                    <small>{{ error }}</small><br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">{% if is_edit %}更新{% else %}创建{% endif %}</button>
+                        <a href="{{ url_for('influencers.material_list') }}" class="btn btn-secondary">取消</a>
+                    </div>
+                </form>
+                
+                {% if not is_edit %}
+                <div class="mt-4 pt-4 border-top">
+                    <h5>通过API自动获取素材信息</h5>
+                    <form id="auto-fetch-form" method="POST" action="{{ url_for('api.auto_fetch_material_data') }}">
+                        <div class="mb-3">
+                            <label for="video_url_input" class="form-label">视频链接</label>
+                            <input type="text" id="video_url_input" class="form-control" placeholder="请输入视频链接">
+                        </div>
+                        <button type="button" id="auto-fetch-btn" class="btn btn-info">自动获取</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not is_edit %}
+<script>
+    document.getElementById('auto-fetch-btn').addEventListener('click', async function() {
+        const videoUrl = document.getElementById('video_url_input').value;
+        if (!videoUrl) {
+            alert('请输入视频链接');
+            return;
+        }
+        
+        try {
+            // 显示加载状态
+            this.disabled = true;
+            this.textContent = '获取中...';
+            
+            // 调用API获取达人信息
+            const response = await fetch('{{ url_for('api.get_influencer_from_url') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ video_url: videoUrl })
+            });
+            
+            if (!response.ok) {
+                throw new Error('获取达人信息失败');
+            }
+            
+            const data = await response.json();
+            
+            // 自动填充表单
+            const materialIdField = document.getElementById('material_id');
+            const videoUrlField = document.getElementById('video_url');
+            
+            // 从URL中提取素材ID（简化处理）
+            const urlParts = videoUrl.split('/');
+            const materialId = urlParts[urlParts.length - 1];
+            
+            materialIdField.value = materialId;
+            videoUrlField.value = videoUrl;
+            
+            alert('达人信息获取成功，请选择对应的达人');
+            
+        } catch (error) {
+            alert('获取失败：' + error.message);
+        } finally {
+            // 恢复按钮状态
+            this.disabled = false;
+            this.textContent = '自动获取';
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
